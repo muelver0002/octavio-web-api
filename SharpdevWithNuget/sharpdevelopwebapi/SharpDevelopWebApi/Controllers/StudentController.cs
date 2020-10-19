@@ -1,59 +1,90 @@
-﻿using System;
-using System.Linq;
-using System.Web.Http;
-using System.Web.Mvc;
+﻿using System.Web;
+using SharpDevelopWebApi.Helpers.JWT;
 using SharpDevelopWebApi.Models;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
 namespace SharpDevelopWebApi.Controllers
 {
+	/// <summary>
+	/// Description of StudentController.
+	/// </summary>
 	public class StudentController : ApiController
 	{
 		SDWebApiDbContext _db = new SDWebApiDbContext();
 		
 		[HttpGet]
-		public IHttpActionResult GetAll()
-		{		
-			var students = _db.Students.ToList();
+		public IHttpActionResult GetAll(string keyword="")
+		{
+			keyword = keyword.Trim();
+			var students = new List<Stud>();
+			
+			if(!string.IsNullOrEmpty(keyword))
+			{
+				students = _db.Student
+					.Where(x=> x.LastName.Contains(keyword) || x.Firstname.Contains(keyword))
+					.ToList();
+			
+			}
+		 
+			else
+				students = _db.Student.ToList();
+			
 			return Ok(students);
 		}
 		
 		[HttpPost]
-		public IHttpActionResult Create(Student stud)
+		public IHttpActionResult Create(Stud NewStudent)
 		{
-			_db.Students.Add(stud);
+			_db.Student.Add(NewStudent);
 			_db.SaveChanges();
-			return Ok(stud);
+			return Ok(NewStudent);
+		
 		}
 		
-		[HttpPut]
-		public IHttpActionResult Update(Student updatedStud)
-		{
-			var stud = _db.Students.Find(updatedStud.Id);
-			if(stud != null)
-			{
-				stud.LastName = updatedStud.LastName;
-				stud.FirstName = updatedStud.FirstName;
-				stud.Course = updatedStud.Course;
-				_db.Entry(stud).State = System.Data.Entity.EntityState.Modified;
-				_db.SaveChanges();
-				return Ok(stud);
-			}
-			else
-				return BadRequest("Student not found");
-		}
 		
-		[HttpDelete]
-		public IHttpActionResult Delete(int Id)			
+	
+		  [HttpPut]
+        public IHttpActionResult Update(Stud updatedstud)
+        {
+            var student = _db.Student.Find(updatedstud.Id);
+            if (student != null)
+            {
+                student.LastName = updatedstud.LastName;
+                student.Firstname = updatedstud.Firstname;
+                student.Gender = updatedstud.Gender;
+                student.SchoolLastAttended = updatedstud.SchoolLastAttended;
+
+                _db.Entry(student).State = System.Data.Entity.EntityState.Modified;
+                _db.SaveChanges();
+
+                return Ok(student);
+            }
+            else
+                return BadRequest("Student not found");
+        }
+
+		
+		
+		[Route("api/searchsong/{id}")]
+		public IHttpActionResult Delete(int Id)
 		{
-			var student = _db.Students.Find(Id);
+			var student = _db.Student.Find(Id);
 			if(student != null)
 			{
-				_db.Students.Remove(student);
+				_db.Student.Remove(student);
 				_db.SaveChanges();
-				return Ok("Delete successfully");
+				
+				return BadRequest("Student successfully Deleted!");
+				
+			
 			}
 			else
-				return BadRequest("Student not found");
+				return BadRequest("Not found...");
+		
 		}
 		
 	}

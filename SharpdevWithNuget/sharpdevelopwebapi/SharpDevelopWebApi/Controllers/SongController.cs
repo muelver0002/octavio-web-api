@@ -71,7 +71,7 @@ namespace SharpDevelopWebApi.Controllers
 			else
 				return BadRequest("Song not found");
 		}
-		[Route("api/searchsong/{id}")]
+		
 		[HttpGet]
 		public IHttpActionResult Search(int Id)
 		{
